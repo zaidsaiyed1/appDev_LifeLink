@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,20 +26,33 @@ SECRET_KEY = 'django-insecure-h92liy!mu52*#ff+6x0ufnvk(y&_xa$l+upss!7!sq$qw6y$#b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.1.13']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
+    'api',
     'core',
 ]
+
+ASGI_APPLICATION = 'app_backend.asgi.application'
+
+CHANNEL_LAYERS = {
+              'default':{
+                        'BACKEND':'channels.layers.InMemoryChannelLayer'
+              }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -47,6 +61,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -55,7 +70,7 @@ ROOT_URLCONF = 'app_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR,'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,7 +85,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'app_backend.wsgi.application'
 
-
+CORS_ALLOW_ALL_ORIGINS = True 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -106,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -117,8 +132,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATICFILES_DIRS = [
+    BASE_DIR ,"static",
+  
+]
+MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
+OLAMAPS_API_KEY = "0Sn4Icza3guNTgH6Ps6qtU1LWOpeit4UaJ02wBf9"
+
+# OR
+# client = Client(api_key="your_api_key_here")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
