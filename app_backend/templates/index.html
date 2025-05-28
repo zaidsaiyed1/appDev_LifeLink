@@ -12,6 +12,7 @@
     <div class="container mt-5">
         <h1 class="text-center mb-4">🚑 Ambulance Notifications</h1>
         <div id="notify"></div>
+        <div id="link" ></div>
     </div>
 
 </p>
@@ -26,33 +27,39 @@
         console.log(data.message)
         if (data.type==='Notification') {
             let messages = document.getElementById('notify')
+            let link = document.getElementById('link')
            console.log(data.message) 
-            messages.insertAdjacentHTML('beforeend', `<p>${data.message}</p>`)
-            let cardHTML = `
-        <a href="/notification/${received.notid}/" class="text-decoration-none">
-  <div class="card mb-3 shadow-sm">
-    <div class="card-header bg-primary text-white">
-        🚑 ${received.ambulanceData.ambulanceName} - ${received.ambulanceData.ambulanceNumber}
-    </div>
-    <div class="card-body text-dark">
-        <h5 class="card-title">${received.notification_title}</h5>
-        <p class="card-text"><strong>Location:</strong> ${received.ambulanceCurrentLoc.current_Address}</p>
-        <p class="card-text"><strong>Coordinates:</strong> ${received.ambulanceCurrentLoc.currLat}, ${received.ambulanceCurrentLoc.currLon}</p>
-    </div>
-    <div class="card-footer text-muted text-end">
-        🕒 ${received.notify_at}
-    </div>
-  </div>
-</a>
-        `;
+            
+             let received = typeof data.message === 'string' ? JSON.parse(data.message) : data.message;
 
+   let mapsUrl = `https://www.google.com/maps?q=${received.ambulanceCurrentLoc.currLat},${received.ambulanceCurrentLoc.currLon}`;
+
+           
+           
+           let cardHTML = `
+        
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    🚑 ${received.ambulanceData.ambulanceName} - ${received.ambulanceData.ambulanceNumber}
+                </div>
+                <div class="card-body text-dark">
+                    <h5 class="card-title">${received.notification_title}</h5>
+                    <p class="card-text"><strong>Location:</strong> ${received.ambulanceCurrentLoc.current_Address}</p>
+                    <p class="card-text"><strong>Coordinates:</strong> ${received.ambulanceCurrentLoc.currLat}, ${received.ambulanceCurrentLoc.currLon}</p>
+                     <a href="${mapsUrl}" target="_blank" class="btn btn-outline-success mt-3">View on Map</a>
+                    </div>
+                    <div class="card-footer text-muted text-end">
+                        🕒 ${received.notify_at}
+                        </div>
+                           </div>
+       
+        `;
         messages.insertAdjacentHTML('afterbegin', cardHTML); // NEW notifications appear on top
-    
+        
                 }
     }
 
 </script>
 
-<h1>Notifications</h1><br>
 </body>
 </html>

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from datetime import timedelta
 import os
 from pathlib import Path
 
@@ -26,9 +27,21 @@ SECRET_KEY = 'django-insecure-h92liy!mu52*#ff+6x0ufnvk(y&_xa$l+upss!7!sq$qw6y$#b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.13']
+ALLOWED_HOSTS = ['192.168.116.30']
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+                  'rest_framework.authentication.SessionAuthentication', 
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
 
-
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,7 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
+    'accounts',
     'api',
     'core',
 ]
@@ -136,6 +151,10 @@ STATICFILES_DIRS = [
     BASE_DIR ,"static",
   
 ]
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 # Default primary key field type

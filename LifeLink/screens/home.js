@@ -4,6 +4,8 @@ import userLocation from "../hooks/userLocation";
 import { useState,useEffect} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRef } from "react";
+import {token} from "./login"
+import * as SecureStore from 'expo-secure-store'
 const HomeScreen=()=>{
   const countRef = useRef(0)
   const { latitude, longitude,currentAdd, errorMsg, getLocation } = userLocation();
@@ -11,6 +13,7 @@ const HomeScreen=()=>{
   const navigation = useNavigation()
   const [amdata,setData] = useState([])
   const [loadedData,setLoadedData] = useState([])
+  
   
 
 // useEffect(()=>{
@@ -38,12 +41,23 @@ const HomeScreen=()=>{
     console.log("Saving error:", e);
   }
 };
+const fetchDataUser = async()=>{
+
+}
   const fetchData = async()=>{
-    const response = await fetch('http://192.168.1.13:8000/api/ambulanceCurrentLocations/')
+const token = await SecureStore.getItemAsync('access');
+    const response = await fetch('http://192.168.116.30:8000/api/getUserAmbulance/',{
+      method:'GET',
+      headers:{
+        'Authorization': `Bearer ${token}`,
+         'Content-Type': 'application/json',
+      }
+    })
     const dataJson= await response.json()
-    const data = dataJson.find(item => item.amid == 1);
-    if (data) {
-      
+    console.log(dataJson)
+    // const data = dataJson.find(item => item.amid == 1);
+    if (dataJson.data.length>0) {
+      const data =  dataJson.data[0]
       setData(data)
       saveData(data)
       setLoadedData(data)
@@ -54,6 +68,7 @@ const HomeScreen=()=>{
   
 
   const loadData = async () => {
+    
     try {
       const value = await AsyncStorage.getItem('ambulanceData');
       if (value !== null) {
@@ -70,7 +85,7 @@ const HomeScreen=()=>{
 
 
   const storeCurrentLocation= async()=>{  
-   
+ const token = await SecureStore.getItemAsync('access');
     const dataCurrentLoc = {
       ambulanceName: loadedData.amid,
       currLat: parseFloat(latitude),
@@ -78,7 +93,14 @@ const HomeScreen=()=>{
       current_Address:currentAdd
 
     };
-   const data  = await fetch('http://192.168.1.13:8000/api/ambulanceCurrentLocations/')
+   const data  = await fetch('http://192.168.116.30:8000/api/ambulanceCurrentLocations/',{
+    
+      method:'GET',
+      headers:{
+        'Authorization': `Bearer ${token}`,
+         'Content-Type': 'application/json',
+      }
+   })
    const dataJson = await data.json();
    const allData = dataJson.data; 
     
@@ -88,9 +110,10 @@ const HomeScreen=()=>{
       
       
       
-      const responseLoca = await fetch('http://192.168.1.13:8000/api/ambulanceCurrentLocations/',{
+      const responseLoca = await fetch('http://192.168.116.30:8000/api/ambulanceCurrentLocations/',{
         method:'POST',
         headers:{
+          'Authorization': `Bearer ${token}`,
           'Content-Type':'application/json',
         },
         body:JSON.stringify(dataCurrentLoc)
@@ -109,9 +132,14 @@ const HomeScreen=()=>{
         
  
         const loadUpdateCurrentLocation = async()=>{
-          
+        const token = await SecureStore.getItemAsync('access');
           try {
-            const response = await fetch('http://192.168.1.13:8000/api/ambulanceCurrentLocations/');
+            const response = await fetch('http://192.168.116.30:8000/api/ambulanceCurrentLocations/',{
+              method:'GET',
+      headers:{
+        'Authorization': `Bearer ${token}`,
+         'Content-Type': 'application/json',}
+            });
             const dataJson = await response.json();
             const allData = dataJson.data
             const ambulanceUpdating = allData.find(item => item.ambulanceName === loadedData.amid);
@@ -140,12 +168,14 @@ const HomeScreen=()=>{
               console.log(`Same location detected. Count: ${countRef.current}`);
               if (countRef.current >= 5) {
                 console.log("Ambulance Emergency Detected!");
-                const responseNotify = await fetch('http://192.168.1.13:8000/api/notifications/', {
+                const responseNotify = await fetch('http://192.168.116.30:8000/api/notifications/', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                    'Authorization': `Bearer ${token}`
+                    ,'Content-Type': 'application/json' },
                   body: JSON.stringify(dataNotification)
                 });
-                const res = await responseNotify.json();
+                const res = await responseNotify.text();
                 console.log("Notify:", res);
                 
                 countRef.current = 0; // Reset after emergency detected
@@ -162,9 +192,10 @@ const HomeScreen=()=>{
 
               };
       
-              const responseLoca = await fetch('http://192.168.1.13:8000/api/ambulanceCurrentLocations/', {
+              const responseLoca = await fetch('http://192.168.116.30:8000/api/ambulanceCurrentLocations/', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json' },
                 body: JSON.stringify(dataCurrentLoc)
               });
               const res = await responseLoca.json();
@@ -207,13 +238,6 @@ return(
                      <Button title="See Details" onPress={()=>{navigation.navigate('Ambulance Details',{data:data})}}/>
                       {/* <Text>{latitude}</Text> */}
                       <Button title="Register Ambulance" onPress={()=>{navigation.navigate('Register Ambulance')}}/>
-                      {/* <Button
-          title="Retry Location"
-          onPress={() => {
-            console.log("Retrying location fetch...");
-            getLocation();
-          }}
-        /> */}
                    </View>
   </SafeAreaView>
                   

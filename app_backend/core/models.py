@@ -3,20 +3,31 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import json
 # Create your models here.
+from accounts.models import CustomUser
+
+class ambulanceOrgaDetail(models.Model):
+     aonid = models.BigAutoField(primary_key=True)
+     organizationName = models.CharField(max_length=100,null=False)
+     is_Gov = models.BooleanField(default=False)
+     is_Private = models.BooleanField(default=False)
+     organizationContact = models.IntegerField(null=False)
+     orgaAddress = models.CharField(max_length=200,null=False)
+     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+     def __str__(self):
+          return f"{self.organizationName}"
 
 
 class ambulance(models.Model):
      amid = models.BigAutoField(primary_key=True)
      ambulanceName = models.CharField(max_length=100,null=False)
      ambulanceNumber = models.CharField(max_length=20,null=False,unique=True)
-     ambulanceOrgaName = models.CharField(max_length=50,null=False)
-     ambulanceDriverName = models.CharField(max_length=60,null=False)
-     ambulanceDriver2Name = models.CharField(max_length=60,null=True)
-     ambulanceDriverNum = models.IntegerField(null=False)
-     ambulanceDriver2Num = models.IntegerField(null=True)
+     ambulanceOrgaName = models.ForeignKey(ambulanceOrgaDetail,on_delete=models.CASCADE)
+     ambulanceDriverName =  models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name="primary_driver")
+     ambulanceDriver2Name =  models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True,related_name="secondry_driver")
      def __str__(self):
           return f" {self.ambulanceName},{self.ambulanceNumber}" 
               
+
 
 class routeAmbulance(models.Model):
      routAmb = models.BigAutoField(primary_key=True)
@@ -57,11 +68,11 @@ class Notification(models.Model):
         'ambulanceData': {
             'ambulanceName': self.ambulanceName.ambulanceName,
             'ambulanceNumber': self.ambulanceName.ambulanceNumber,
-            'ambulanceOrgaName': self.ambulanceName.ambulanceOrgaName,
-            'ambulanceDriverName': self.ambulanceName.ambulanceDriverName,
-            'ambulanceDriver2Name': self.ambulanceName.ambulanceDriver2Name,
-            'ambulanceDriverNum': self.ambulanceName.ambulanceDriverNum,
-            'ambulanceDriver2Num': self.ambulanceName.ambulanceDriver2Num,
+            'ambulanceOrgaName': self.ambulanceName.ambulanceOrgaName.organizationName,
+            'ambulanceDriverName': self.ambulanceName.ambulanceDriverName.first_name,
+            'ambulanceDriver2Name': self.ambulanceName.ambulanceDriver2Name.first_name,
+            'ambulanceDriverNum': self.ambulanceName.ambulanceDriverName.number,
+            'ambulanceDriver2Num': self.ambulanceName.ambulanceDriver2Name.number,
         },
         'ambulanceCurrentLoc': {
             'currLat': self.ambulanceCurrLoc.currLat,
